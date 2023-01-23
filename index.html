@@ -1,0 +1,114 @@
+<!-- Present location on leaflet map-->
+<html>
+
+<head>
+    <!--Set UTF-8-->
+    <meta charset="utf-8" />
+    <title>臺中港務消防隊轄區消防栓水源分布</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"
+        integrity="sha256-kLaT2GOSpHechhsozzB+flnD+zUyjE2LlfWPgU04xyI=" crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"
+        integrity="sha256-WBkoXOwTeyKclOHuWtc+i2uENFpDZ9YPdf5Hf+D7ewM=" crossorigin=""></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+</head>
+<!-- Show map -->
+
+<body>
+    <div id="map" style="height:100%"></div>
+    <!--Show a button at the bottom of the map-->
+    <button id="Locate" style="position: absolute; bottom: 10px; right: 10px; z-index: 1000; width: 20%; height: 10%; color: brown; 
+    margin: auto auto;
+    background-color: yellow; font-size: 15px; opacity: 0.8;"
+        onclick="locate_me()">
+        點我定位<br/>(定位後會自動追隨)</button>
+
+    <!-- Load csv data with ajax-->
+    <script>
+        //Leaflet map
+
+        // center of the map
+        var center = [24.2381534, 120.5033851];
+
+        // Create the map
+        var map = L.map('map').setView(center, 14);
+
+        // Set up the OSM layer
+        L.tileLayer(
+            'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 18
+        }).addTo(map);
+
+        //Loading fire hydrants data
+
+        var url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRTFTRstcC3nuOdIETrx5ZjgKRiJUsfZ9ZkPcPR7er9Hn7Jt0QB2CXObtfhNNvrPQ/pub?output=csv";
+        var data = [];
+        $.ajax({
+            type: "GET",
+            url: url,
+            dataType: "text",
+            success: function (response) {
+                //console.log(response);
+                //convert csv string to array
+                var allRows = response.split(/\r?\n|\r/);
+                for (var singleRow = 0; singleRow < allRows.length; singleRow++) {
+                    data.push(allRows[singleRow].split(','));
+                }
+                //console.log(data);
+                var LatCol = data[0].indexOf("Lat");
+                var LonCol = data[0].indexOf("Lon");
+                var TypeCol = 4;
+                //0:地上式單口式、1:地上打倒安全式(單口)、2:地上式雙口式、3:地上打倒安全式(雙口)、4:地下式單口式、5:地下式雙口式
+                var color_list = ["red", "blue", "green", "yellow", "orange", "purple"];
+                var type_dict = {
+                    "0": "地上式單口式",
+                    "1": "地上打倒安全式(單口)",
+                    "2": "地上式雙口式",
+                    "3": "地上打倒安全式(雙口)",
+                    "4": "地下式單口式",
+                    "5": "地下式雙口式"
+                }
+                //console.log(LatCol, LonCol);
+                for (var i = 1; i < data.length; i++) {
+                    var lat = data[i][LatCol];
+                    var lon = data[i][LonCol];
+                    //Draw a circle
+                    //console.log(TypeCol, color_list[data[i][TypeCol]], type_dict[data[i][TypeCol]])
+                    var circle = L.circle([lat, lon], {
+                        color: color_list[data[i][TypeCol]],
+                        fillColor: color_list[data[i][TypeCol]],
+                        fillOpacity: 0.5,
+                        radius: 20
+                    }).addTo(map);
+                    //Show text
+                    text = "";
+                    for (var j = 0; j < data[0].length; j++) {
+                        text += data[0][j] + ": " + data[i][j] + "<br>";
+                    }
+                    text += "消防栓形態(種類): " + type_dict[data[i][TypeCol]];
+                    circle.bindPopup(text);
+                }
+            }
+        });
+
+        var marker = L.marker([24.2381534, 120.5033851], {
+                opacity: 1.0
+            }).addTo(map);
+        function locate_me(){
+            //Locate me button
+            map.locate({
+                setView: true, // 是否讓地圖跟著移動中心點
+                watch: true, // 是否要一直監測使用者位置
+                maxZoom: 18, // 最大的縮放值
+                enableHighAccuracy: true, // 是否要高精準度的抓位置
+                timeout: 10000 // 觸發locationerror事件之前等待的毫秒數
+            });
+
+            map.on('locationfound', foundHandler);
+        }
+        // 使用者提供位置
+                function foundHandler(e) {
+            marker.setLatLng(e.latlng); // 移動 marker
+        }
+    </script>
+
+</html>
