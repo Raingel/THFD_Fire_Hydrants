@@ -5,9 +5,8 @@
 https://raingel.github.io/THFD_Fire_Hydrants/
 
 # 雲端協作連結
+https://docs.google.com/spreadsheets/d/1LwnCMwOTVkq9kq55SOWB8d70uA98DYRs/
 原始資料為自來水公司提供
-
-https://docs.google.com/spreadsheets/d/e/2PACX-1vRTFTRstcC3nuOdIETrx5ZjgKRiJUsfZ9ZkPcPR7er9Hn7Jt0QB2CXObtfhNNvrPQ/pub?output=csv
 
 # 已知問題
 1. 消防栓種類錯誤的不少
